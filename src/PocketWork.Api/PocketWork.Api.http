@@ -1,0 +1,6 @@
+@PocketWork.Api_HostAddress = http://localhost:5193
+
+GET {{PocketWork.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
