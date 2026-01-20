@@ -1,0 +1,39 @@
+@model Olbrasoft.PocketWork.Repositories.DTOs.Orders.OrderResponseDto
+
+@{
+    ViewData["Title"] = "Order Details";
+}
+
+<h1>Order Details</h1>
+
+<div class="card" style="max-width: 500px;">
+    <div class="card-header">
+        <h5 class="card-title mb-0">Order #@Model.Id</h5>
+    </div>
+    <div class="card-body">
+        <dl class="row mb-0">
+            <dt class="col-sm-4">Customer</dt>
+            <dd class="col-sm-8"><strong>@Model.CustomerName</strong></dd>
+
+            <dt class="col-sm-4">Type</dt>
+            <dd class="col-sm-8">
+                <span class="badge @(Model.OrderType == Olbrasoft.PocketWork.EntityFrameworkCore.Enums.OrderType.Express ? "bg-danger" : "bg-primary")">
+                    @Model.OrderType
+                </span>
+            </dd>
+
+            <dt class="col-sm-4">Date</dt>
+            <dd class="col-sm-8">@Model.OrderDate.ToString("yyyy-MM-dd")</dd>
+
+            <dt class="col-sm-4">Time</dt>
+            <dd class="col-sm-8">@Model.OrderTime.ToString(@"hh\:mm")</dd>
+
+            <dt class="col-sm-4">Reserved</dt>
+            <dd class="col-sm-8">@Model.ReservedTime.ToString(@"hh\:mm")</dd>
+        </dl>
+    </div>
+    <div class="card-footer d-flex gap-2">
+        <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+    </div>
+</div>

@@ -1,0 +1,63 @@
+@model IEnumerable<Olbrasoft.PocketWork.Repositories.DTOs.Customers.CustomerResponseDto>
+
+@{
+    ViewData["Title"] = "Customers";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Customers</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Add Customer
+    </a>
+</div>
+
+@if (!Model.Any())
+{
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> No customers yet. <a asp-action="Create">Create the first one!</a>
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead class="table-dark">
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Address</th>
+                    <th>Orders</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var customer in Model)
+                {
+                    <tr>
+                        <td>@customer.Id</td>
+                        <td><strong>@customer.FullName</strong></td>
+                        <td>@customer.Email</td>
+                        <td>@customer.PhoneNumber</td>
+                        <td>@customer.Address</td>
+                        <td>
+                            <span class="badge bg-secondary">@customer.OrdersCount</span>
+                        </td>
+                        <td class="text-end">
+                            <a asp-action="Details" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-info">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-warning">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                            <a asp-action="Delete" asp-route-id="@customer.Id" class="btn btn-sm btn-outline-danger">
+                                <i class="bi bi-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

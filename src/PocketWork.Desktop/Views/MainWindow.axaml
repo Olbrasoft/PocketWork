@@ -1,0 +1,133 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:PocketWork.Desktop.ViewModels"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d" d:DesignWidth="900" d:DesignHeight="600"
+        x:Class="PocketWork.Desktop.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Width="900" Height="600"
+        Title="PocketWork Desktop">
+
+    <Design.DataContext>
+        <vm:MainWindowViewModel/>
+    </Design.DataContext>
+
+    <DockPanel>
+        <!-- Status Bar -->
+        <Border DockPanel.Dock="Bottom" Background="#f0f0f0" Padding="10,5">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Grid.Column="0" Text="{Binding StatusMessage}" VerticalAlignment="Center"/>
+                <ProgressBar Grid.Column="1" IsIndeterminate="True" Width="100"
+                             IsVisible="{Binding IsLoading}" Margin="10,0,0,0"/>
+            </Grid>
+        </Border>
+
+        <!-- Header -->
+        <Border DockPanel.Dock="Top" Background="#2196F3" Padding="15">
+            <Grid ColumnDefinitions="*,Auto">
+                <StackPanel Grid.Column="0">
+                    <TextBlock Text="PocketWork" FontSize="24" FontWeight="Bold" Foreground="White"/>
+                    <TextBlock Text="Customer and Order Management" Foreground="White" Opacity="0.8"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="Refresh All" Command="{Binding RefreshAllCommand}"
+                        Background="White" Foreground="#2196F3" Padding="15,8"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content with Tabs -->
+        <TabControl Margin="10">
+            <!-- Customers Tab -->
+            <TabItem Header="Customers">
+                <Grid RowDefinitions="Auto,*" Margin="5">
+                    <!-- Add Customer Form -->
+                    <Border Grid.Row="0" Background="#f5f5f5" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Add New Customer" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <Grid ColumnDefinitions="*,*,*,*,Auto" RowDefinitions="Auto,Auto">
+                                <TextBox Grid.Column="0" Grid.Row="0" Watermark="First Name *"
+                                         Text="{Binding NewCustomerName}" Margin="0,0,5,5"/>
+                                <TextBox Grid.Column="1" Grid.Row="0" Watermark="Last Name *"
+                                         Text="{Binding NewCustomerSurname}" Margin="0,0,5,5"/>
+                                <TextBox Grid.Column="2" Grid.Row="0" Watermark="Email *"
+                                         Text="{Binding NewCustomerEmail}" Margin="0,0,5,5"/>
+                                <TextBox Grid.Column="3" Grid.Row="0" Watermark="Phone"
+                                         Text="{Binding NewCustomerPhone}" Margin="0,0,5,5"/>
+                                <Button Grid.Column="4" Grid.Row="0" Content="Add Customer"
+                                        Command="{Binding CreateCustomerCommand}"
+                                        Background="#4CAF50" Foreground="White" Padding="15,8"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Customers List -->
+                    <Grid Grid.Row="1" RowDefinitions="*,Auto">
+                        <DataGrid Grid.Row="0" ItemsSource="{Binding Customers}"
+                                  SelectedItem="{Binding SelectedCustomer}"
+                                  AutoGenerateColumns="False" IsReadOnly="True"
+                                  GridLinesVisibility="Horizontal" BorderThickness="1" BorderBrush="#ddd">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                <DataGridTextColumn Header="Name" Binding="{Binding FullName}" Width="*"/>
+                                <DataGridTextColumn Header="Email" Binding="{Binding Email}" Width="*"/>
+                                <DataGridTextColumn Header="Phone" Binding="{Binding PhoneNumber}" Width="120"/>
+                                <DataGridTextColumn Header="Address" Binding="{Binding Address}" Width="*"/>
+                                <DataGridTextColumn Header="Orders" Binding="{Binding OrdersCount}" Width="60"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                            <Button Content="Delete Selected" Command="{Binding DeleteCustomerCommand}"
+                                    Background="#f44336" Foreground="White" Padding="15,8"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+
+            <!-- Orders Tab -->
+            <TabItem Header="Orders">
+                <Grid RowDefinitions="Auto,*" Margin="5">
+                    <!-- Add Order Form -->
+                    <Border Grid.Row="0" Background="#f5f5f5" CornerRadius="5" Padding="10" Margin="0,0,0,10">
+                        <StackPanel>
+                            <TextBlock Text="Add New Order (select customer from Customers tab first)"
+                                       FontWeight="Bold" Margin="0,0,0,10"/>
+                            <Grid ColumnDefinitions="Auto,*,Auto,*,Auto,*,Auto" RowDefinitions="Auto">
+                                <TextBlock Grid.Column="0" Text="Customer:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="{Binding SelectedCustomer.FullName, FallbackValue='(none selected)'}"
+                                           VerticalAlignment="Center" FontWeight="Bold" Margin="0,0,15,0"/>
+                                <TextBlock Grid.Column="2" Text="Date:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <DatePicker Grid.Column="3" SelectedDate="{Binding NewOrderDate}" Margin="0,0,15,0"/>
+                                <TextBlock Grid.Column="4" Text="Time:" VerticalAlignment="Center" Margin="0,0,5,0"/>
+                                <TextBox Grid.Column="5" Text="{Binding NewOrderTime}" Width="80" Margin="0,0,15,0"/>
+                                <Button Grid.Column="6" Content="Create Order"
+                                        Command="{Binding CreateOrderCommand}"
+                                        Background="#4CAF50" Foreground="White" Padding="15,8"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Orders List -->
+                    <Grid Grid.Row="1" RowDefinitions="*,Auto">
+                        <DataGrid Grid.Row="0" ItemsSource="{Binding Orders}"
+                                  SelectedItem="{Binding SelectedOrder}"
+                                  AutoGenerateColumns="False" IsReadOnly="True"
+                                  GridLinesVisibility="Horizontal" BorderThickness="1" BorderBrush="#ddd">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="ID" Binding="{Binding Id}" Width="50"/>
+                                <DataGridTextColumn Header="Customer" Binding="{Binding CustomerName}" Width="*"/>
+                                <DataGridTextColumn Header="Type" Binding="{Binding OrderTypeName}" Width="100"/>
+                                <DataGridTextColumn Header="Date" Binding="{Binding FormattedDate}" Width="100"/>
+                                <DataGridTextColumn Header="Time" Binding="{Binding FormattedTime}" Width="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                            <Button Content="Delete Selected" Command="{Binding DeleteOrderCommand}"
+                                    Background="#f44336" Foreground="White" Padding="15,8"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>

@@ -4,6 +4,11 @@
     <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Olbrasoft.PocketWork.Mvc</RootNamespace>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\PocketWork.Repositories\PocketWork.Repositories.csproj" />
+  </ItemGroup>
 
 </Project>

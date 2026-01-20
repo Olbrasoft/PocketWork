@@ -140,42 +140,167 @@ PocketWork/
 
 ---
 
-## 🧩 Komponenty
+## 🧩 Komponenty - Podrobný popis
 
-### 1. PocketWork.EntityFrameworkCore
-**Datová vrstva** obsahující:
-- **Entities:** Doménové entity (User, Customer, Order, ServiceType)
-- **DbContext:** `PocketWorkDbContext` s Fluent API konfigurací
-- **Migrations:** EF Core databázové migrace
-- **Enums:** `JobType`, `OrderType`
+### 1. PocketWork.EntityFrameworkCore (Datová vrstva)
 
-### 2. PocketWork.Repositories
-**Repository vrstva** poskytující:
-- **DTOs:** Data Transfer Objects oddělující API od databázových entit
-- **Repository Pattern:** Abstrakce nad databázovým přístupem
-- **Interfaces:** `IRepository<T>`, `IOrderRepository`, atd.
-- **Mapping:** Mapování mezi entitami a DTOs
+**Účel:** Toto je nejnižší vrstva aplikace, která se stará o veškerou komunikaci s databází.
 
-### 3. PocketWork.Api
-**REST API** pro externí klienty:
-- RESTful endpointy pro CRUD operace
-- Swagger/OpenAPI dokumentace
-- Používá Repository vrstvu
-- Navrženo pro Desktop a mobilní aplikace
+**Co dělá:**
+- **Mapování na entity** - Definuje doménové entity (`User`, `Customer`, `Order`, `ServiceType`), které odpovídají tabulkám v databázi. Každá entita je C# třída s vlastnostmi, které se mapují na sloupce databázové tabulky.
+- **DbContext** - Třída `PocketWorkDbContext` je "brána" do databáze. Obsahuje `DbSet<T>` kolekce pro každou entitu a řídí připojení k databázi, sledování změn a ukládání dat.
+- **Fluent API konfigurace** - Ve složce `Configurations/` jsou třídy, které přesně definují, jak se entity mapují na databázi (názvy sloupců, datové typy, relace mezi tabulkami, indexy, omezení).
+- **Migrace** - EF Core sleduje změny v entitách a generuje SQL příkazy pro aktualizaci schématu databáze.
 
-### 4. PocketWork.Mvc
-**MVC webová aplikace:**
-- Server-side rendering s Razor views
-- Bootstrap 5 UI
-- Používá Repository vrstvu
-- Responsive design
+**Proč existuje samostatně:**
+Oddělení datové vrstvy umožňuje:
+- Změnit databázi (SQLite → PostgreSQL → SQL Server) bez změn v ostatních vrstvách
+- Testovat vyšší vrstvy s mock databází
+- Verzovat schéma databáze pomocí migrací
 
-### 5. PocketWork.Desktop
-**Cross-platform desktopová aplikace:**
-- **Avalonia UI** framework (Linux, Windows, macOS)
-- **MVVM** architektura
-- Komunikuje s API přes HTTP
-- Moderní Fluent Design
+```
+Entity → DbContext → SQL dotazy → SQLite/PostgreSQL/SQL Server
+```
+
+---
+
+### 2. PocketWork.Repositories (Repository vrstva / Vrstva repozitářů)
+
+**Účel:** Tato vrstva je **klíčová abstrakce**, která odděluje zbytek aplikace od přímého přístupu k databázi.
+
+**Problém, který řeší:**
+Bez této vrstvy by controllery (MVC, API) měly přímý přístup k `DbContext`. To je problematické:
+- Controller by mohl vykonat libovolný SQL dotaz
+- Databázové entity by "prosakovaly" do API odpovědí
+- Změna v databázi by vyžadovala změny v controllerech
+
+**Jak to funguje:**
+
+1. **Repository třídy** (`OrderRepository`, `CustomerRepository`, ...) mají přístup k `DbContext`, ale ven vystavují pouze definované metody:
+   ```csharp
+   public interface IOrderRepository
+   {
+       Task<IEnumerable<OrderResponseDto>> GetAllAsync();
+       Task<OrderResponseDto?> GetByIdAsync(int id);
+       Task<OrderResponseDto> CreateAsync(CreateOrderDto dto);
+       Task DeleteAsync(int id);
+   }
+   ```
+
+2. **DTOs (Data Transfer Objects)** - Do vyšších vrstev se **nedostávají entity**, ale pouze DTOs:
+   - `CreateOrderDto` - data pro vytvoření objednávky (vstup)
+   - `UpdateOrderDto` - data pro aktualizaci (vstup)
+   - `OrderResponseDto` - data vrácená zpět (výstup)
+
+**Proč DTOs místo entit:**
+- **Bezpečnost** - Můžete kontrolovat, která data se posílají ven
+- **Flexibilita** - DTO může kombinovat data z více entit (např. `CustomerName` v `OrderResponseDto`)
+- **Stabilita API** - Změna entity neovlivní API kontrakt
+- **Výkon** - DTO obsahuje jen potřebná data, ne celou entitu s navigačními vlastnostmi
+
+```
+Controller → Repository.GetAllAsync() → [OrderResponseDto, ...]
+                    ↓
+            DbContext.Orders → mapování → DTO
+```
+
+---
+
+### 3. PocketWork.Api (REST API vrstva)
+
+**Účel:** Poskytuje HTTP endpointy pro aplikace, které **běží mimo server** - tedy nemají přímý přístup k databázi ani k repository vrstvě.
+
+**Kdy se používá:**
+- **Desktopové aplikace** - běží na počítači uživatele
+- **Mobilní aplikace** - běží na telefonu/tabletu
+- **Single Page Applications (SPA)** - React, Vue.js, Angular aplikace
+- **Integrace třetích stran** - jiné systémy, které potřebují přístup k datům
+- **Mikroslužby** - komunikace mezi jednotlivými službami
+
+**Co poskytuje:**
+- RESTful endpointy: `GET /api/orders`, `POST /api/customers`, atd.
+- JSON formát pro přenos dat
+- Swagger/OpenAPI dokumentace na `/swagger`
+- HTTP status kódy pro signalizaci výsledku (200 OK, 404 Not Found, 400 Bad Request)
+
+**Architektura:**
+```
+Desktop App ──HTTP──→ API Controller ──→ Repository ──→ DbContext ──→ DB
+Mobile App  ──HTTP──↗
+3rd Party   ──HTTP──↗
+```
+
+**Důležité:** API vrstva pracuje pouze s DTOs z Repository vrstvy. Nikdy nevrací přímo databázové entity.
+
+---
+
+### 4. PocketWork.Mvc (Webová prezentační vrstva)
+
+**Účel:** Server-side webová aplikace, která generuje HTML stránky na serveru a posílá je do prohlížeče.
+
+**Co je MVC:**
+- **Model** - data (v našem případě DTOs z Repository)
+- **View** - Razor šablony (.cshtml), které generují HTML
+- **Controller** - řídí tok dat mezi Model a View
+
+**Jak to funguje:**
+1. Uživatel zadá URL v prohlížeči
+2. Server zpracuje požadavek v Controlleru
+3. Controller načte data z Repository
+4. Data se předají do View (Razor šablony)
+5. View vygeneruje HTML
+6. HTML se pošle do prohlížeče
+
+**Alternativy k MVC:**
+MVC je jen **jedna z možností** webové prezentace. Microsoft nabízí další:
+
+| Technologie | Popis | Použití |
+|------------|-------|---------|
+| **MVC** | Model-View-Controller | Komplexní webové aplikace |
+| **Razor Pages** | Stránkově orientovaný model | Jednodušší weby, formuláře |
+| **Blazor Server** | C# komponenty na serveru | Interaktivní aplikace bez JS |
+| **Blazor WebAssembly** | C# běžící v prohlížeči | SPA bez JS |
+| **Minimal APIs** | Lehké HTTP handlery | Mikroslužby, jednoduchá API |
+
+**MVC vs Razor Pages:**
+- MVC má oddělené Controllers a Views - vhodné pro větší aplikace
+- Razor Pages kombinují logiku a view do jednoho souboru - jednodušší pro CRUD operace
+
+**V této aplikaci:** MVC přistupuje **přímo k Repository vrstvě** (ne přes API), protože běží na stejném serveru jako databáze.
+
+---
+
+### 5. PocketWork.Desktop (Desktopová aplikace)
+
+**Účel:** Cross-platform desktopová aplikace, která běží na počítači uživatele (Windows, Linux, macOS).
+
+**Technologie:**
+- **Avalonia UI** - moderní cross-platform UI framework pro .NET (obdoba WPF pro všechny platformy)
+- **MVVM pattern** - Model-View-ViewModel architektura
+- **CommunityToolkit.Mvvm** - knihovna pro zjednodušení MVVM
+
+**Jak komunikuje s daty:**
+Desktop aplikace **nemá přímý přístup k databázi** (ta běží na serveru). Místo toho:
+1. Posílá HTTP požadavky na API (`http://localhost:5050/api/...`)
+2. Přijímá JSON data
+3. Deserializuje je do lokálních modelů
+4. Zobrazuje v UI
+
+```
+Desktop App ←──JSON──→ REST API ←──→ Repository ←──→ Database
+   (UI)                (Server)        (Server)       (Server)
+```
+
+**Struktura:**
+- `Views/` - XAML soubory definující UI (tlačítka, tabulky, formuláře)
+- `ViewModels/` - C# třídy s logikou a daty pro UI
+- `Models/` - lokální modely pro API odpovědi
+- `Services/ApiClient.cs` - HTTP klient pro komunikaci s API
+
+**MVVM výhody:**
+- Čistě oddělené UI od logiky
+- Snadné unit testování (ViewModels lze testovat bez UI)
+- Data binding - automatická synchronizace mezi UI a daty
 
 ---
 
