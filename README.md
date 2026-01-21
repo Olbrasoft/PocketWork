@@ -404,7 +404,7 @@ dotnet test /p:CollectCoverage=true
 | **API** | ASP.NET Core Web API |
 | **Desktop** | Avalonia UI 11.2 |
 | **Testing** | xUnit, Moq |
-| **Architecture** | Repository Pattern, DTO Pattern, MVVM |
+| **Architecture** | Repository Pattern, DTO Pattern, MVC (Web), MVVM (Desktop) |
 
 ---
 
