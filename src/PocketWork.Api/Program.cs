@@ -22,6 +22,13 @@ builder.Services.AddScoped<IServiceTypeRepository, ServiceTypeRepository>();
 
 var app = builder.Build();
 
+// Ensure database is created
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<PocketWorkDbContext>();
+    context.Database.EnsureCreated();
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

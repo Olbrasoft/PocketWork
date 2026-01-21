@@ -13,6 +13,8 @@
 
 # SQLite databases
 *.db
+# But keep sample database with demo data
+!data/pocketwork.db
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
