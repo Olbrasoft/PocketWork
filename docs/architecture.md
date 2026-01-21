@@ -1,5 +1,19 @@
 # PocketWork - Proof of Concept
 
+> **⚠️ DŮLEŽITÉ UPOZORNĚNÍ**
+>
+> Tento dokument popisuje **zjednodušenou architekturu** (Proof of Concept), kde se v některých příkladech používají přímo entity bez repository vrstvy.
+>
+> **Skutečná naprogramovaná aplikace** používá **plnou vícevrstvou architekturu**:
+> - **Repository Pattern** - `PocketWork.Repositories` vrstva odděluje přístup k databázi
+> - **DTOs (Data Transfer Objects)** - entity se nemapují přímo do API/MVC, ale používají se DTOs
+> - **MVC používá Repositories** - ne přímý přístup k DbContext ani HTTP volání na API
+> - **API používá Repositories** - vrací DTOs, ne entity
+>
+> Viz aktuální kód v repozitáři a `README.md` pro skutečnou implementaci.
+
+---
+
 ## Přehled projektu
 
 PocketWork je webová aplikace pro správu objednávek a zákazníků s vícevrstvou architekturou.
