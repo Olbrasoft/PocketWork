@@ -22,46 +22,49 @@ PocketWork je referenční implementace vícevrstvé .NET aplikace demonstrujíc
 ### Vrstvený model
 
 ```
-┌─────────────────────────────────────────────────────┐
-│                  PocketWork.Desktop                 │
-│              (Avalonia UI - Linux/Win/Mac)          │
-└────────────────────┬────────────────────────────────┘
-                     │ HTTP/REST
-                     ▼
-┌─────────────────────────────────────────────────────┐
-│              PocketWork.Api (REST API)              │
-└────────────────────┬────────────────────────────────┘
-                     │
-        ┌────────────┴────────────┐
-        │                         │
-        ▼                         ▼
-┌──────────────┐          ┌──────────────┐
-│ PocketWork.  │          │ PocketWork.  │
-│     Mvc      │          │     Api      │
-│ (Web UI)     │          │ (REST API)   │
-└──────┬───────┘          └──────┬───────┘
-       │                         │
-       └────────────┬────────────┘
-                    │ Repository calls
-                    ▼
-        ┌─────────────────────────┐
-        │  PocketWork.Repositories │
-        │  (DTOs + Repositories)   │
-        └────────────┬─────────────┘
-                     │ DbContext access
-                     ▼
-        ┌─────────────────────────┐
-        │ PocketWork.EntityFramework│
-        │         Core              │
-        │ (Entities, DbContext)     │
-        └────────────┬─────────────┘
-                     │ SQL queries
-                     ▼
-              ┌─────────────┐
-              │   SQLite    │
-              │  Database   │
-              └─────────────┘
+┌─────────────────────────────────────────────────────────────────────┐
+│                         PREZENTAČNÍ VRSTVA                          │
+├─────────────────────┬─────────────────────┬─────────────────────────┤
+│  PocketWork.Desktop │   PocketWork.Mvc    │     PocketWork.Api      │
+│  (Avalonia UI)      │   (Web UI)          │     (REST API)          │
+│  Win/Linux/Mac      │   Server-side HTML  │     Pro externí klienty │
+└─────────┬───────────┴──────────┬──────────┴──────────┬──────────────┘
+          │                      │                     │
+          │ HTTP/REST            │ Direct              │ Direct
+          │                      │                     │
+          └──────────┐           │                     │
+                     ▼           ▼                     ▼
+          ┌──────────────────────────────────────────────────────────┐
+          │              PocketWork.Repositories                      │
+          │              (Repository Pattern + DTOs)                  │
+          │                                                           │
+          │  • IOrderRepository, ICustomerRepository, ...             │
+          │  • CreateOrderDto, OrderResponseDto, ...                  │
+          │  • Mapování Entity ↔ DTO                                  │
+          └────────────────────────┬──────────────────────────────────┘
+                                   │ DbContext access
+                                   ▼
+          ┌──────────────────────────────────────────────────────────┐
+          │              PocketWork.EntityFrameworkCore               │
+          │              (Datová vrstva)                              │
+          │                                                           │
+          │  • Entity: User, Customer, Order, ServiceType             │
+          │  • PocketWorkDbContext                                    │
+          │  • Fluent API Configurations                              │
+          │  • Migrations                                             │
+          └────────────────────────┬──────────────────────────────────┘
+                                   │ SQL queries
+                                   ▼
+                         ┌─────────────────┐
+                         │     SQLite      │
+                         │    Database     │
+                         └─────────────────┘
 ```
+
+**Důležité:**
+- **Desktop** komunikuje s **API** přes HTTP (běží na jiném stroji/procesu)
+- **MVC** a **API** přistupují k **Repositories** přímo (běží na stejném serveru)
+- **MVC** a **API** jsou na sobě **nezávislé** - obě používají Repositories
 
 ---
 
