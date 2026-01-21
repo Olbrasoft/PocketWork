@@ -478,6 +478,12 @@ Změnit v `.csproj`:
 - **AGENTS.md:** Instrukce pro AI agenty
 - **Proof of Concept:** `/home/jirka/Dokumenty/ProofOfConcepts/PocketWork.md`
 
+## 🎬 Video
+
+Záznam z vývoje projektu pomocí AI (Claude Code):
+
+[![PocketWork Development](https://img.youtube.com/vi/GruRbL-06cA/0.jpg)](https://www.youtube.com/watch?v=GruRbL-06cA)
+
 ---
 
 ## 🤝 Příspěvky
