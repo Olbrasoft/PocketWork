@@ -22,49 +22,63 @@ PocketWork je referenční implementace vícevrstvé .NET aplikace demonstrujíc
 ### Vrstvený model
 
 ```
-┌─────────────────────────────────────────────────────────────────────┐
-│                         PREZENTAČNÍ VRSTVA                          │
-├─────────────────────┬─────────────────────┬─────────────────────────┤
-│  PocketWork.Desktop │   PocketWork.Mvc    │     PocketWork.Api      │
-│  (Avalonia UI)      │   (Web UI)          │     (REST API)          │
-│  Win/Linux/Mac      │   Server-side HTML  │     Pro externí klienty │
-└─────────┬───────────┴──────────┬──────────┴──────────┬──────────────┘
-          │                      │                     │
-          │ HTTP/REST            │ Direct              │ Direct
-          │                      │                     │
-          └──────────┐           │                     │
-                     ▼           ▼                     ▼
-          ┌──────────────────────────────────────────────────────────┐
-          │              PocketWork.Repositories                      │
-          │              (Repository Pattern + DTOs)                  │
-          │                                                           │
-          │  • IOrderRepository, ICustomerRepository, ...             │
-          │  • CreateOrderDto, OrderResponseDto, ...                  │
-          │  • Mapování Entity ↔ DTO                                  │
-          └────────────────────────┬──────────────────────────────────┘
-                                   │ DbContext access
-                                   ▼
-          ┌──────────────────────────────────────────────────────────┐
-          │              PocketWork.EntityFrameworkCore               │
-          │              (Datová vrstva)                              │
-          │                                                           │
-          │  • Entity: User, Customer, Order, ServiceType             │
-          │  • PocketWorkDbContext                                    │
-          │  • Fluent API Configurations                              │
-          │  • Migrations                                             │
-          └────────────────────────┬──────────────────────────────────┘
-                                   │ SQL queries
-                                   ▼
-                         ┌─────────────────┐
-                         │     SQLite      │
-                         │    Database     │
-                         └─────────────────┘
+                    ┌─────────────────────────┐
+                    │   PocketWork.Desktop    │
+                    │   (Avalonia UI)         │
+                    │   Win/Linux/Mac         │
+                    └───────────┬─────────────┘
+                                │
+                                │ HTTP/REST (externí klient)
+                                ▼
+┌───────────────────────────────────────────────────────────────────────────┐
+│                              SERVER                                        │
+├───────────────────────────────┬───────────────────────────────────────────┤
+│                               │                                           │
+│   ┌───────────────────┐       │       ┌───────────────────┐               │
+│   │  PocketWork.Mvc   │       │       │  PocketWork.Api   │               │
+│   │  (Web UI)         │       │       │  (REST API)       │               │
+│   │  Server-side HTML │       │       │  JSON endpointy   │               │
+│   └─────────┬─────────┘       │       └─────────┬─────────┘               │
+│             │                 │                 │                         │
+│             │ ProjectReference│  ProjectReference                         │
+│             │                 │                 │                         │
+│             └────────┬────────┴────────┬────────┘                         │
+│                      │                 │                                  │
+│                      ▼                 ▼                                  │
+│          ┌──────────────────────────────────────────────┐                 │
+│          │         PocketWork.Repositories              │                 │
+│          │         (Repository Pattern + DTOs)          │                 │
+│          │                                              │                 │
+│          │  • IOrderRepository, ICustomerRepository     │                 │
+│          │  • CreateOrderDto, OrderResponseDto          │                 │
+│          │  • Mapování Entity ↔ DTO                     │                 │
+│          └──────────────────┬───────────────────────────┘                 │
+│                             │                                             │
+│                             │ ProjectReference                            │
+│                             ▼                                             │
+│          ┌──────────────────────────────────────────────┐                 │
+│          │      PocketWork.EntityFrameworkCore          │                 │
+│          │      (Datová vrstva)                         │                 │
+│          │                                              │                 │
+│          │  • Entity: User, Customer, Order, ServiceType│                 │
+│          │  • PocketWorkDbContext                       │                 │
+│          │  • Fluent API Configurations                 │                 │
+│          └──────────────────┬───────────────────────────┘                 │
+│                             │                                             │
+│                             │ SQL                                         │
+│                             ▼                                             │
+│                   ┌─────────────────┐                                     │
+│                   │     SQLite      │                                     │
+│                   │    Database     │                                     │
+│                   └─────────────────┘                                     │
+└───────────────────────────────────────────────────────────────────────────┘
 ```
 
-**Důležité:**
-- **Desktop** komunikuje s **API** přes HTTP (běží na jiném stroji/procesu)
-- **MVC** a **API** přistupují k **Repositories** přímo (běží na stejném serveru)
-- **MVC** a **API** jsou na sobě **nezávislé** - obě používají Repositories
+**Klíčové body:**
+- **Desktop** je **mimo server** - komunikuje s API přes HTTP/REST
+- **MVC** a **API** běží **na serveru** a mají přímou `ProjectReference` na Repositories
+- **MVC** a **API** jsou na sobě **nezávislé** (žádná reference mezi nimi)
+- **Repositories** má `ProjectReference` na **EntityFrameworkCore**
 
 ---
 
