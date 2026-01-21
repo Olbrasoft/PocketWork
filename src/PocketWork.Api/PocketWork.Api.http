@@ -1,6 +1,52 @@
-@PocketWork.Api_HostAddress = http://localhost:5193
+@PocketWork.Api_HostAddress = http://localhost:5050
 
-GET {{PocketWork.Api_HostAddress}}/weatherforecast/
+### Get all customers
+GET {{PocketWork.Api_HostAddress}}/api/customers
 Accept: application/json
 
-###
+### Get customer by ID
+GET {{PocketWork.Api_HostAddress}}/api/customers/1
+Accept: application/json
+
+### Create customer
+POST {{PocketWork.Api_HostAddress}}/api/customers
+Content-Type: application/json
+
+{
+  "name": "Jan",
+  "surname": "Novák",
+  "phoneNumber": "+420 777 123 456",
+  "email": "jan.novak@email.cz",
+  "address": "Praha 1"
+}
+
+### Get all orders
+GET {{PocketWork.Api_HostAddress}}/api/orders
+Accept: application/json
+
+### Get order by ID
+GET {{PocketWork.Api_HostAddress}}/api/orders/1
+Accept: application/json
+
+### Create order
+POST {{PocketWork.Api_HostAddress}}/api/orders
+Content-Type: application/json
+
+{
+  "customerId": 1,
+  "orderType": 1,
+  "orderDate": "2026-01-22",
+  "orderTime": "10:00:00",
+  "reservedTime": "01:00:00"
+}
+
+### Delete order
+DELETE {{PocketWork.Api_HostAddress}}/api/orders/1
+
+### Get all users
+GET {{PocketWork.Api_HostAddress}}/api/users
+Accept: application/json
+
+### Get all service types
+GET {{PocketWork.Api_HostAddress}}/api/servicetypes
+Accept: application/json
